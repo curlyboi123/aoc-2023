@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"unicode"
@@ -14,6 +15,7 @@ func get_file_content_by_line() []string {
 	if err != nil {
 		panic(err)
 	}
+
 	return strings.Split(string(content), "\n")
 }
 
@@ -43,7 +45,7 @@ func part_one() int {
 	return total
 }
 
-func part_two() int {
+func part_two() {
 	lines := get_file_content_by_line()
 
 	number_string_to_int := map[string]string{
@@ -59,76 +61,49 @@ func part_two() int {
 	}
 
 	total := 0
-	for idx, line := range lines {
-		var only_ints strings.Builder
+	for _, line := range lines {
+		fmt.Println(line)
+		// Sanitise input
+		line = strings.ReplaceAll(line, "oneeight", "oneeight")
+		line = strings.ReplaceAll(line, "threeight", "threeeight")
+		line = strings.ReplaceAll(line, "fiveight", "fiveeight")
+		line = strings.ReplaceAll(line, "nineight", "nineeight")
+		line = strings.ReplaceAll(line, "twone", "twoone")
+		line = strings.ReplaceAll(line, "sevenine", "sevennine")
+		line = strings.ReplaceAll(line, "eightwo", "eighttwo")
 
-		// Get index in string of first and last occurence of ints as strings in string
-		first_num_as_string_idx := -1
-		first_num := ""
-		last_num_as_string_idx := 0
-		last_num := ""
-		for k, v := range number_string_to_int {
-			// String contains integer as string
-			num_as_string_idx := strings.Index(line, k)
-			if num_as_string_idx >= 0 {
-				if num_as_string_idx < first_num_as_string_idx || first_num_as_string_idx == -1 {
-					first_num_as_string_idx = num_as_string_idx
-					first_num = v
-				}
-				if num_as_string_idx > last_num_as_string_idx {
-					last_num_as_string_idx = num_as_string_idx
-					last_num = v
-				}
-			}
+		fmt.Println(line)
+		re := regexp.MustCompile("one|two|three|four|five|six|seven|eight|nine|[0-9]")
+		match_slices := re.FindAllStringSubmatchIndex(line, -1)
+
+		first_match := line[match_slices[0][0]:match_slices[0][1]]
+		fmt.Println(first_match)
+		if len(first_match) > 1 {
+			first_match = number_string_to_int[first_match]
 		}
 
-		for _, char := range line {
-			if unicode.IsDigit(char) {
-				only_ints.WriteRune(char)
-			}
-		}
-		output := only_ints.String()
-
-		fmt.Print(output)
-
-		foo := ""
-		bar := ""
-		if len(output) != 0 {
-			first_num_as_int := string(output[0])
-			last_num_as_int := string((output[len(output)-1]))
-
-			if strings.Index(line, first_num_as_int) < first_num_as_string_idx {
-				foo = first_num_as_int
-			} else {
-				foo = first_num
-			}
-			if strings.Index(line, last_num_as_int) > last_num_as_string_idx {
-				bar = last_num_as_int
-			} else {
-				bar = last_num
-			}
-		} else {
-			foo = first_num
-			bar = last_num
+		last_match := line[match_slices[len(match_slices)-1][0]:match_slices[len(match_slices)-1][1]]
+		fmt.Println(last_match)
+		if len(last_match) > 1 {
+			last_match = number_string_to_int[last_match]
 		}
 
-		fmt.Println(idx)
+		combined := first_match + last_match
+		fmt.Println(combined)
 
-		combined, err := strconv.Atoi(foo + bar)
+		i, err := strconv.Atoi(combined)
 		if err != nil {
 			panic(err)
 		}
-
-		total = total + combined
+		total = total + i
+		fmt.Println()
 	}
-	return total
+	fmt.Println(total)
 }
 
 func main() {
 	// part_one_result := part_one()
 	// fmt.Println(part_one_result)
 
-	part_two_result := part_two()
-	fmt.Println(part_two_result)
-
+	part_two()
 }
