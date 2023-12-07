@@ -62,41 +62,36 @@ func part_two() {
 
 	total := 0
 	for _, line := range lines {
-		fmt.Println(line)
 		// Sanitise input
-		line = strings.ReplaceAll(line, "oneeight", "oneeight")
+		line = strings.ReplaceAll(line, "oneight", "oneeight")
+		line = strings.ReplaceAll(line, "twone", "twoone")
 		line = strings.ReplaceAll(line, "threeight", "threeeight")
 		line = strings.ReplaceAll(line, "fiveight", "fiveeight")
-		line = strings.ReplaceAll(line, "nineight", "nineeight")
-		line = strings.ReplaceAll(line, "twone", "twoone")
 		line = strings.ReplaceAll(line, "sevenine", "sevennine")
 		line = strings.ReplaceAll(line, "eightwo", "eighttwo")
+		line = strings.ReplaceAll(line, "eighthree", "eightthree")
+		line = strings.ReplaceAll(line, "nineight", "nineeight")
 
-		fmt.Println(line)
 		re := regexp.MustCompile("one|two|three|four|five|six|seven|eight|nine|[0-9]")
-		match_slices := re.FindAllStringSubmatchIndex(line, -1)
+		match_slices := re.FindAllStringSubmatch(line, -1)
 
-		first_match := line[match_slices[0][0]:match_slices[0][1]]
-		fmt.Println(first_match)
+		first_match := match_slices[0][0]
 		if len(first_match) > 1 {
 			first_match = number_string_to_int[first_match]
 		}
 
-		last_match := line[match_slices[len(match_slices)-1][0]:match_slices[len(match_slices)-1][1]]
-		fmt.Println(last_match)
+		last_match := match_slices[len(match_slices)-1][0]
 		if len(last_match) > 1 {
 			last_match = number_string_to_int[last_match]
 		}
 
 		combined := first_match + last_match
-		fmt.Println(combined)
 
 		i, err := strconv.Atoi(combined)
 		if err != nil {
 			panic(err)
 		}
 		total = total + i
-		fmt.Println()
 	}
 	fmt.Println(total)
 }
