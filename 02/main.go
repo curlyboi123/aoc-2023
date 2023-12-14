@@ -26,12 +26,9 @@ func part_one() {
 			"green": 0,
 			"blue":  0,
 		}
-		number_and_results := strings.Split(line, ":")
-		game_number, err := strconv.Atoi(strings.Split(number_and_results[0], " ")[1])
-		if err != nil {
-			panic(err)
-		}
-		game_results := strings.Split(number_and_results[1], ";")
+		game, results, _ := strings.Cut(line, ":")
+		game_number, _ := strconv.Atoi(strings.Fields(game)[1])
+		game_results := strings.Split(results, ";")
 
 		game_possible := true
 		for _, round := range game_results {

@@ -14,7 +14,6 @@ func getFileContentByLine() []string {
 	if err != nil {
 		panic(err)
 	}
-
 	return strings.Split(string(content), "\n")
 }
 
@@ -28,36 +27,26 @@ func partOne() {
 	for idx, line := range lines {
 		lineLength := len(line)
 		numberMatches := numberRegex.FindAllStringSubmatchIndex(line, -1)
-
 		for _, numberMatch := range numberMatches {
 			number := line[numberMatch[0]:numberMatch[1]]
-
 			// Check for symbol before number
 			if numberMatch[0] != 0 {
 				previousCharacter := string(line[numberMatch[0]-1])
 				if symbolRegex.MatchString(previousCharacter) {
-					i, err := strconv.Atoi(number)
-					if err != nil {
-						panic(err)
-					}
+					i, _ := strconv.Atoi(number)
 					total = total + i
 					continue
 				}
 			}
-
 			// Check for symbol after number
 			if numberMatch[1] != lineLength {
 				nextCharacter := string(line[numberMatch[1]])
 				if symbolRegex.MatchString(nextCharacter) {
-					i, err := strconv.Atoi(number)
-					if err != nil {
-						panic(err)
-					}
+					i, _ := strconv.Atoi(number)
 					total = total + i
 					continue
 				}
 			}
-
 			// Calculate indexes so that it doesn't go out of range
 			var startIndex int
 			var endIndex int
@@ -71,33 +60,24 @@ func partOne() {
 			} else {
 				endIndex = numberMatch[1] + 1
 			}
-
 			// Check for symbol on line above number
 			if idx != 0 {
 				prevLineSlice := lines[idx-1][startIndex:endIndex]
 				if symbolRegex.MatchString(prevLineSlice) {
-					i, err := strconv.Atoi(number)
-					if err != nil {
-						panic(err)
-					}
+					i, _ := strconv.Atoi(number)
 					total = total + i
 					continue
 				}
 			}
-
 			// Check for symbol on line below number
 			if idx != len(lines)-1 {
 				nextLineSlice := lines[idx+1][startIndex:endIndex]
 				if symbolRegex.MatchString(nextLineSlice) {
-					i, err := strconv.Atoi(number)
-					if err != nil {
-						panic(err)
-					}
+					i, _ := strconv.Atoi(number)
 					total = total + i
 					continue
 				}
 			}
-
 		}
 	}
 	fmt.Println(total)
@@ -171,7 +151,6 @@ func partTwo() {
 					}
 				}
 			}
-
 			if len(adjacentNumbers) == 2 {
 				i, _ := strconv.Atoi(adjacentNumbers[0])
 				j, _ := strconv.Atoi(adjacentNumbers[1])
@@ -184,6 +163,6 @@ func partTwo() {
 }
 
 func main() {
-	// partOne()
+	partOne()
 	partTwo()
 }
