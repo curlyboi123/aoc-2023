@@ -50,20 +50,24 @@ func partOne() {
 func partTwo() {
 	lines := getFileContentByLine()
 
-	total := 0
-
 	m := make(map[int]int)
 	for n := 1; n < len(lines)+1; n++ {
-		m[n] = 0
+		m[n] = 1
 	}
-	for idx, line := range lines {
+	for lineIndex, line := range lines {
+		cardNumber := lineIndex + 1
 		_, nums, _ := strings.Cut(line, ":")
 		winningNums, playerNums, _ := strings.Cut(nums, "|")
 		numIntersection := HashGeneric[string](strings.Fields(winningNums), strings.Fields(playerNums))
-
+		for i := 1; i < len(numIntersection)+1; i++ {
+			m[cardNumber+i] = m[cardNumber+i] + (m[cardNumber] * 1)
+		}
 	}
-
-	fmt.Println(total)
+	totalCards := 0
+	for _, v := range m {
+		totalCards = totalCards + v
+	}
+	fmt.Println(totalCards)
 }
 
 func main() {
