@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"slices"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 type mapping struct {
@@ -43,28 +45,37 @@ func partTwo(mappings [][]mapping) {
 	_, s, _ := strings.Cut(lines[0], ":")
 	seedRanges := strings.Fields(s)
 
-	var locationValues []int
+	result := math.MaxInt
+	var resultMutex sync.Mutex
+	var wg sync.WaitGroup
 
 	for i := 0; i < len(seedRanges)-1; i += 2 {
 		seedMin, _ := strconv.Atoi(seedRanges[i])
 		seedRange, _ := strconv.Atoi(seedRanges[i+1])
 		seedMax := seedMin + seedRange
-		for j := seedMin; j < seedMax; j++ {
-			// fmt.Printf("Calculating mapping: %d/%d\n", j-seedMin, seedMax-seedMin)
-			value := j
-			for _, mapping := range mappings {
-				for _, mappingRange := range mapping {
-					if value >= mappingRange.sourceMin && value <= mappingRange.sourceMax {
-						value = value + mappingRange.change
-						break
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			subResult := math.MaxInt
+			for j := seedMin; j < seedMax; j++ {
+				value := j
+				for _, mapping := range mappings {
+					for _, mappingRange := range mapping {
+						if value >= mappingRange.sourceMin && value <= mappingRange.sourceMax {
+							value = value + mappingRange.change
+							break
+						}
 					}
 				}
+				subResult = min(subResult, value)
 			}
-			locationValues = append(locationValues, value)
-		}
+			resultMutex.Lock()
+			defer resultMutex.Unlock()
+			result = min(result, subResult)
+		}()
 	}
-	fmt.Println(slices.Min(locationValues))
-
+	wg.Wait()
+	fmt.Println(result)
 }
 
 func main() {
