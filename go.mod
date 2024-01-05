@@ -1,3 +1,0 @@
-module github.com/curlyboi123/aoc-2023
-
-go 1.21.4
