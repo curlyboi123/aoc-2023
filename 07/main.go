@@ -33,14 +33,15 @@ func main() {
 		"A": 12,
 	}
 
-	handCount := make([][]string, 7)
-
 	handBidMap := map[string]int{}
 	for _, line := range lines {
 		hand, b, _ := strings.Cut(line, " ")
 		bid, _ := strconv.Atoi(b)
 		handBidMap[hand] = bid
 	}
+
+	// Ordered list to hold the hands. Position in list is relative rank of hand type
+	handCount := make([][]string, 7)
 
 	for hand := range handBidMap {
 		// Count number of each card in hand
