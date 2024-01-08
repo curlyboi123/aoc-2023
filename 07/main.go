@@ -38,37 +38,49 @@ func getHandRanking(hand string) int {
 	// count and increase hand ranking as hands are discovered
 
 	// Frequency of each number of card occurrences
-	cardCountCount := make(map[int]int)
+	cardCountCount := map[int]int{
+		1: 0, 2: 0, 3: 0, 4: 0, 5: 0,
+	}
 	for _, v := range cardCount {
 		cardCountCount[v]++
 	}
 
 	// Assign hand rank
-	if _, ok := cardCountCount[5]; ok {
+	if cardCountCount[5] > 0 {
 		return int(FiveOfAKind)
-	} else if _, ok := cardCountCount[4]; ok {
+	} else if cardCountCount[4] > 0 {
 		return int(FourOfAKind)
-	} else if _, ok := cardCountCount[3]; ok {
-		if _, ok := cardCountCount[2]; ok {
-			return int(FullHouse)
-		} else {
-			return int(ThreeOfAKind)
-		}
-	} else if val, ok := cardCountCount[2]; ok {
-		if val == 2 {
-			return int(TwoPair)
-		} else if val == 1 {
-			return int(OnePair)
-		}
+	} else if cardCountCount[3] > 0 && cardCountCount[2] > 0 {
+		return int(FullHouse)
+	} else if cardCountCount[3] > 0 {
+		return int(ThreeOfAKind)
+	} else if cardCountCount[2] == 2 {
+		return int(TwoPair)
+	} else if cardCountCount[2] == 1 {
+		return int(OnePair)
 	} else {
 		return int(HighCard)
 	}
-	return -1
+}
+
+type player struct {
+	hand string
+	bid  int
 }
 
 func partOne() {
 	lines := getFileContentByLine()
 
+	handCount := make([][]player, 7)
+	for _, line := range lines {
+		hand, b, _ := strings.Cut(line, " ")
+		bid, _ := strconv.Atoi(b)
+		p := player{hand: hand, bid: bid}
+		handRank := getHandRanking(hand)
+		handCount[handRank] = append(handCount[handRank], p)
+	}
+
+	// Order all hands by rank
 	cardRankings := map[string]int{
 		"2": 0,
 		"3": 1,
@@ -84,32 +96,14 @@ func partOne() {
 		"K": 11,
 		"A": 12,
 	}
-
-	handBidMap := map[string]int{}
-	for _, line := range lines {
-		hand, b, _ := strings.Cut(line, " ")
-		bid, _ := strconv.Atoi(b)
-		handBidMap[hand] = bid
-	}
-
-	// Ordered list to hold the hands grouped by rank e.g. FullHouse
-	// Position in list is relative rank of hand type
-	handCount := make([][]string, 7)
-
-	for hand := range handBidMap {
-		handRank := getHandRanking(hand)
-		handCount[handRank] = append(handCount[handRank], hand)
-	}
-
-	// Order hands by rank
 	for _, hands := range handCount {
 		sort.Slice(hands, func(i, j int) bool {
 			var cond bool
-			for n := 0; n < len(hands[i]); n++ {
-				if hands[i][n] == hands[j][n] {
+			for n := 0; n < len(hands[i].hand); n++ {
+				if hands[i].hand[n] == hands[j].hand[n] {
 					continue
 				} else {
-					cond = cardRankings[string(hands[i][n])] < cardRankings[string(hands[j][n])]
+					cond = cardRankings[string(hands[i].hand[n])] < cardRankings[string(hands[j].hand[n])]
 					break
 				}
 			}
@@ -122,7 +116,7 @@ func partOne() {
 	rank := 1
 	for _, handType := range handCount {
 		for _, hand := range handType {
-			total = total + (handBidMap[hand] * rank)
+			total = total + (hand.bid * rank)
 			rank++
 		}
 	}
