@@ -74,9 +74,8 @@ func partOne() {
 }
 
 type Container struct {
-	mu            sync.Mutex
-	finishedNums  map[int][]string // map of the number of moves it took a starting node to reach a finish position
-	startingNodes []string
+	mu           sync.Mutex
+	finishedNums map[int][]string // map of the number of moves it took a starting node to reach a finish position
 }
 
 // Return greatest common divisor using Euclid's Algorithm
@@ -114,17 +113,18 @@ func partTwo() {
 	}
 
 	// Get the starting nodes
+	startingNodes := []string{}
 	for currentNode := range network {
 		lastCharacter := currentNode[len(currentNode)-1]
 		if string(lastCharacter) == "A" {
-			c.startingNodes = append(c.startingNodes, currentNode)
+			startingNodes = append(startingNodes, currentNode)
 		}
 	}
 
 	var wg sync.WaitGroup
 	allNodesFinished := false
 	for !allNodesFinished {
-		for _, node := range c.startingNodes {
+		for _, node := range startingNodes {
 			wg.Add(1)
 			n := node
 			go func() {
@@ -140,7 +140,7 @@ func partTwo() {
 					c.finishedNums[numberOfMoves] = append(c.finishedNums[numberOfMoves], n)
 				}
 
-				if len(c.finishedNums) == len(c.startingNodes) {
+				if len(c.finishedNums) == len(startingNodes) {
 					allNodesFinished = true
 					return
 				}
