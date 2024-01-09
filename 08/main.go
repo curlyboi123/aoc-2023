@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 )
 
 func getFileContentByLine() []string {
@@ -37,7 +38,6 @@ func isNodeFinished(node string, part int) bool {
 }
 
 func getNumMovesToFinishNode(startingNode string, network map[string][]string, moves string, part int) int {
-
 	numOfMoves := 0
 	nodeFinished := false
 	currentNode := startingNode
@@ -72,58 +72,105 @@ func partOne() {
 	fmt.Println(numberOfMoves)
 }
 
+type Container struct {
+	mu              sync.Mutex
+	nodeFinishMoves map[string][]int // map of the number of moves it took a starting node to reach a finish position
+}
+
 func partTwo() {
 	lines := getFileContentByLine()
 	network := createNetworkMap(lines[2:])
-	movements := lines[0]
-	fmt.Println(movements)
+	moves := lines[0]
+	fmt.Println(moves)
 
 	// Get the starting nodes
-	currentNodes := []string{}
+	startingNodes := []string{}
 	for currentNode := range network {
 		lastCharacter := currentNode[len(currentNode)-1]
 		if string(lastCharacter) == "A" {
-			currentNodes = append(currentNodes, currentNode)
+			startingNodes = append(startingNodes, currentNode)
 		}
 	}
-	fmt.Println(currentNodes)
+	fmt.Println(startingNodes)
 
 	// Go routine for each starting node
 	// When finish found check other nodes have same value finish
-
-	numberOfMoves := 0
-	nodesFinished := false
-	for !nodesFinished {
-		for _, move := range movements {
-			numberOfMoves++
-			numberFinishedNodes := 0
-			for idx, node := range currentNodes {
-				var newNodeVal string
-				if string(move) == "L" {
-					newNodeVal = network[node][0]
-				} else {
-					newNodeVal = network[node][1]
-				}
-				currentNodes[idx] = newNodeVal
-				if isNodeFinished(newNodeVal, 2) {
-					numberFinishedNodes++
-				}
-			}
-			if numberFinishedNodes > 0 {
-				fmt.Println("Node Finished")
-				fmt.Println(currentNodes)
-			}
-			if numberFinishedNodes == len(currentNodes) {
-				nodesFinished = true
-				break
-			}
-
-		}
+	nodeFinishMoves := make(map[string][]int)
+	for _, node := range startingNodes {
+		nodeFinishMoves[node] = []int{}
 	}
-	fmt.Println(numberOfMoves)
+	c := Container{
+		nodeFinishMoves: nodeFinishMoves,
+	}
+	fmt.Println(c.nodeFinishMoves)
+
+	// Count of which numbers are finishes
+
+	var wg sync.WaitGroup
+	allNodesFinished := false
+	for !allNodesFinished {
+		for _, node := range startingNodes {
+			wg.Add(1)
+			n := node
+			go func() {
+				// Run check
+				defer wg.Done()
+				numberOfMoves := getNumMovesToFinishNode(n, network, moves, 2)
+
+				c.mu.Lock()
+				defer c.mu.Unlock()
+				c.nodeFinishMoves[n] = append(c.nodeFinishMoves[n], numberOfMoves)
+
+				fmt.Println(c.nodeFinishMoves)
+				// numOccurrences := 0
+				// for _, v := range c.nodeFinishMoves {
+				// 	if slices.Contains(v, numberOfMoves) {
+				// 		numOccurrences++
+				// 	}
+				// }
+				// fmt.Println(numOccurrences)
+				// if numOccurrences == len(startingNodes) {
+
+				// 	allNodesFinished = true
+				// }
+			}()
+		}
+		wg.Wait()
+	}
+
+	// numberOfMoves := 0
+	// nodesFinished := false
+	// for !nodesFinished {
+	// 	for _, move := range movements {
+	// 		numberOfMoves++
+	// 		numberFinishedNodes := 0
+	// 		for idx, node := range currentNodes {
+	// 			var newNodeVal string
+	// 			if string(move) == "L" {
+	// 				newNodeVal = network[node][0]
+	// 			} else {
+	// 				newNodeVal = network[node][1]
+	// 			}
+	// 			currentNodes[idx] = newNodeVal
+	// 			if isNodeFinished(newNodeVal, 2) {
+	// 				numberFinishedNodes++
+	// 			}
+	// 		}
+	// 		if numberFinishedNodes > 0 {
+	// 			fmt.Println("Node Finished")
+	// 			fmt.Println(currentNodes)
+	// 		}
+	// 		if numberFinishedNodes == len(currentNodes) {
+	// 			nodesFinished = true
+	// 			break
+	// 		}
+
+	// 	}
+	// }
+	// fmt.Println(numberOfMoves)
 }
 
 func main() {
 	partOne()
-	// partTwo()
+	partTwo()
 }
