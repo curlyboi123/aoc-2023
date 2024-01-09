@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"slices"
 	"strings"
 	"sync"
 )
@@ -73,43 +74,57 @@ func partOne() {
 }
 
 type Container struct {
-	mu              sync.Mutex
-	nodeFinishMoves map[string][]int // map of the number of moves it took a starting node to reach a finish position
+	mu            sync.Mutex
+	finishedNums  map[int][]string // map of the number of moves it took a starting node to reach a finish position
+	startingNodes []string
+}
+
+// Return greatest common divisor using Euclid's Algorithm
+func GCD(a, b int) int {
+	for b != 0 {
+		t := b
+		b = a % b
+		a = t
+	}
+	return a
+}
+
+// Return lowest common multiple
+func LCM(a, b int) int {
+	return a * b / GCD(a, b)
+}
+
+// Return lcm of args
+func LCMM(integers ...int) int {
+	result := integers[0]
+	for i := 1; i < len(integers); i++ {
+		result = LCM(result, integers[i])
+	}
+	return result
 }
 
 func partTwo() {
 	lines := getFileContentByLine()
 	network := createNetworkMap(lines[2:])
 	moves := lines[0]
-	fmt.Println(moves)
+
+	finishedNums := make(map[int][]string)
+	c := Container{
+		finishedNums: finishedNums,
+	}
 
 	// Get the starting nodes
-	startingNodes := []string{}
 	for currentNode := range network {
 		lastCharacter := currentNode[len(currentNode)-1]
 		if string(lastCharacter) == "A" {
-			startingNodes = append(startingNodes, currentNode)
+			c.startingNodes = append(c.startingNodes, currentNode)
 		}
 	}
-	fmt.Println(startingNodes)
-
-	// Go routine for each starting node
-	// When finish found check other nodes have same value finish
-	nodeFinishMoves := make(map[string][]int)
-	for _, node := range startingNodes {
-		nodeFinishMoves[node] = []int{}
-	}
-	c := Container{
-		nodeFinishMoves: nodeFinishMoves,
-	}
-	fmt.Println(c.nodeFinishMoves)
-
-	// Count of which numbers are finishes
 
 	var wg sync.WaitGroup
 	allNodesFinished := false
 	for !allNodesFinished {
-		for _, node := range startingNodes {
+		for _, node := range c.startingNodes {
 			wg.Add(1)
 			n := node
 			go func() {
@@ -119,55 +134,27 @@ func partTwo() {
 
 				c.mu.Lock()
 				defer c.mu.Unlock()
-				c.nodeFinishMoves[n] = append(c.nodeFinishMoves[n], numberOfMoves)
 
-				fmt.Println(c.nodeFinishMoves)
-				// numOccurrences := 0
-				// for _, v := range c.nodeFinishMoves {
-				// 	if slices.Contains(v, numberOfMoves) {
-				// 		numOccurrences++
-				// 	}
-				// }
-				// fmt.Println(numOccurrences)
-				// if numOccurrences == len(startingNodes) {
+				// If amount to finish hasn't already been counted then append
+				if !slices.Contains(c.finishedNums[numberOfMoves], n) {
+					c.finishedNums[numberOfMoves] = append(c.finishedNums[numberOfMoves], n)
+				}
 
-				// 	allNodesFinished = true
-				// }
+				if len(c.finishedNums) == len(c.startingNodes) {
+					allNodesFinished = true
+					return
+				}
 			}()
 		}
 		wg.Wait()
 	}
 
-	// numberOfMoves := 0
-	// nodesFinished := false
-	// for !nodesFinished {
-	// 	for _, move := range movements {
-	// 		numberOfMoves++
-	// 		numberFinishedNodes := 0
-	// 		for idx, node := range currentNodes {
-	// 			var newNodeVal string
-	// 			if string(move) == "L" {
-	// 				newNodeVal = network[node][0]
-	// 			} else {
-	// 				newNodeVal = network[node][1]
-	// 			}
-	// 			currentNodes[idx] = newNodeVal
-	// 			if isNodeFinished(newNodeVal, 2) {
-	// 				numberFinishedNodes++
-	// 			}
-	// 		}
-	// 		if numberFinishedNodes > 0 {
-	// 			fmt.Println("Node Finished")
-	// 			fmt.Println(currentNodes)
-	// 		}
-	// 		if numberFinishedNodes == len(currentNodes) {
-	// 			nodesFinished = true
-	// 			break
-	// 		}
-
-	// 	}
-	// }
-	// fmt.Println(numberOfMoves)
+	var movesTaken []int
+	for k := range c.finishedNums {
+		movesTaken = append(movesTaken, k)
+	}
+	totalMovesTaken := LCMM(movesTaken...)
+	fmt.Println(totalMovesTaken)
 }
 
 func main() {
