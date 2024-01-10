@@ -26,7 +26,8 @@ func checkContainsNonZero(s []int) bool {
 func main() {
 	lines := getFileContentByLine()
 
-	allHistoryTotal := 0
+	partOneTotal := 0
+	partTwoTotal := 0
 	for _, line := range lines {
 		initialVals := strings.Fields(line)
 		vals := []int{}
@@ -54,13 +55,19 @@ func main() {
 			}
 		}
 
-		historyTotal := 0
+		partOneCurTotal := 0
+		partTwoCurTotal := 0
 		slices.Reverse(allDiffs) // Reverse to make loop easier
 		for i := 0; i < len(allDiffs); i++ {
+			firstVal := allDiffs[i][0]
 			lastVal := allDiffs[i][len(allDiffs[i])-1]
-			historyTotal = historyTotal + lastVal
+			partOneCurTotal = partOneCurTotal + lastVal
+			partTwoCurTotal = firstVal - partTwoCurTotal
+
 		}
-		allHistoryTotal = allHistoryTotal + historyTotal
+		partOneTotal = partOneTotal + partOneCurTotal
+		partTwoTotal = partTwoTotal + partTwoCurTotal
 	}
-	fmt.Println(allHistoryTotal)
+	fmt.Println(partOneTotal)
+	fmt.Println(partTwoTotal)
 }
