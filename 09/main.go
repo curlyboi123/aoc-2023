@@ -2,17 +2,12 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"slices"
 	"strconv"
 	"strings"
-)
 
-func getFileContentByLine() []string {
-	filePath := os.Args[1]
-	content, _ := os.ReadFile(filePath)
-	return strings.Split(string(content), "\n")
-}
+	"aoc-2023/utils"
+)
 
 func checkContainsNonZero(s []int) bool {
 	for i := 1; i < len(s); i++ {
@@ -24,7 +19,7 @@ func checkContainsNonZero(s []int) bool {
 }
 
 func main() {
-	lines := getFileContentByLine()
+	lines := utils.GetFileContentByLine()
 
 	partOneTotal := 0
 	partTwoTotal := 0
