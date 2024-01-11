@@ -3,8 +3,15 @@ package main
 import (
 	"aoc-2023/utils"
 	"fmt"
+	"slices"
 	"strings"
 )
+
+type pipe struct {
+	val  string
+	xPos int
+	yPos int
+}
 
 func getInitialCoords(lines []string) (x int, y int) {
 	for y, line := range lines {
@@ -16,133 +23,52 @@ func getInitialCoords(lines []string) (x int, y int) {
 	panic("Starting position not found")
 }
 
-func getDirToTravel(curPipeVal string, curDirection string) string {
-	switch curDirection {
-	case "N":
-		switch curPipeVal {
-		case "|":
-			fmt.Println("S")
-			return "S"
-		case "L":
-			fmt.Println("L")
-			return "E"
-		case "J":
-			fmt.Println("J")
-			return "W"
-		}
-	case "E":
-		switch curPipeVal {
-		case "-":
-			fmt.Println("-")
-			return "W"
-		case "F":
-			fmt.Println("F")
-			return "S"
-		case "L":
-			fmt.Println("L")
-			return "N"
-		}
-	case "S":
-		switch curPipeVal {
-		case "|":
-			fmt.Println("|")
-			return "N"
-		case "F":
-			fmt.Println("F")
-			return "E"
-		case "7":
-			fmt.Println("7")
-			return "W"
-		}
-	case "W":
-		switch curPipeVal {
-		case "-":
-			fmt.Println("-")
-			return "E"
-		case "7":
-			fmt.Println("7")
-			return "S"
-		case "J":
-			fmt.Println("J")
-			return "N"
+// Returns the values of the pipes that are connected to the given pipe
+func getStartingPipeVal(pipeGrid []string, curPipe pipe, connectionMap map[string][]string) string {
+	connectedPipeLocations := []string{}
+	// Check if north pipe is connected
+	if curPipe.yPos > 0 {
+		northPipe := string(pipeGrid[curPipe.yPos-1][curPipe.xPos])
+		if slices.Contains(connectionMap[northPipe], "S") {
+			connectedPipeLocations = append(connectedPipeLocations, "N")
+
 		}
 	}
-	panic("Invalid direction supplied")
+
+	// Check if east pipe is connected
+	if curPipe.xPos < len(pipeGrid[curPipe.yPos])-1 {
+		eastPipe := string(pipeGrid[curPipe.yPos][curPipe.xPos+1])
+		if slices.Contains(connectionMap[eastPipe], "W") {
+			connectedPipeLocations = append(connectedPipeLocations, "E")
+		}
+	}
+
+	// Check if south pipe is connected
+	if curPipe.yPos < len(pipeGrid)-1 {
+		southPipe := string(pipeGrid[curPipe.yPos+1][curPipe.xPos])
+		if slices.Contains(connectionMap[southPipe], "N") {
+			connectedPipeLocations = append(connectedPipeLocations, "S")
+		}
+	}
+
+	// Check if west pipe is connected
+	if curPipe.xPos > 0 {
+		westPipe := string(pipeGrid[curPipe.yPos][curPipe.xPos-1])
+		if slices.Contains(connectionMap[westPipe], "E") {
+			connectedPipeLocations = append(connectedPipeLocations, "W")
+		}
+	}
+
+	for k, v := range connectionMap {
+		if slices.Equal(v, connectedPipeLocations) {
+			return k
+		}
+	}
+	panic("Pipe supplied is not a starting pipe")
 }
 
-type pipe struct {
-	val  string
-	xPos int
-	yPos int
-}
-
-func getInitialDirection(pipeGrid []string, startingPipe pipe) string {
-	if startingPipe.yPos > 0 {
-		northPipe := string(pipeGrid[startingPipe.yPos-1][startingPipe.xPos])
-		switch northPipe {
-		case "|":
-			return "N"
-		case "7":
-			return "W"
-		case "F":
-			return "E"
-		}
-	}
-	if startingPipe.yPos < len(pipeGrid) {
-		southPipe := string(pipeGrid[startingPipe.yPos+1][startingPipe.xPos])
-		switch southPipe {
-		case "|":
-			return "S"
-		case "J":
-			return "W"
-		case "L":
-			return "E"
-		}
-	}
-	if startingPipe.xPos < len(pipeGrid[startingPipe.yPos]) {
-		eastPipe := string(pipeGrid[startingPipe.yPos+1][startingPipe.xPos+1])
-		switch eastPipe {
-		case "-":
-			return "E"
-		case "7":
-			return "S"
-		case "J":
-			return "N"
-		}
-	}
-	if startingPipe.xPos > 0 {
-		westPipe := string(pipeGrid[startingPipe.yPos+1][startingPipe.xPos-1])
-		switch westPipe {
-		case "-":
-			return "W"
-		case "F":
-			return "S"
-		case "L":
-			return "N"
-		}
-	}
-	panic("No pipes connected to starting pipe")
-}
-
-func getNewPipe(pipeGrid []string, pipe pipe, travelDir string) pipe {
-	switch travelDir {
-	case "N":
-		pipe.yPos = pipe.yPos - 1
-	case "E":
-		pipe.xPos = pipe.xPos + 1
-	case "S":
-		pipe.yPos = pipe.yPos + 1
-	case "W":
-		pipe.xPos = pipe.xPos - 1
-	}
-	fmt.Println(pipe.xPos, pipe.yPos)
-	newPipeVal := string(pipeGrid[pipe.yPos][pipe.xPos])
-	pipe.val = newPipeVal
-	return pipe
-}
-
-// ///
-func getConnectedPipes(pipeGrid []string, pipe pipe) []string {
+func main() {
+	lines := utils.GetFileContentByLine()
 	connectionMap := map[string][]string{
 		"|": {"N", "S"},
 		"-": {"E", "W"},
@@ -152,50 +78,49 @@ func getConnectedPipes(pipeGrid []string, pipe pipe) []string {
 		"F": {"E", "S"},
 		".": {},
 	}
-	fmt.Println(connectionMap)
-	// Check if north pipe is connected
-	if pipe.yPos > 0 {
-		northPipe := pipeGrid[pipe.yPos-1][pipe.xPos]
+
+	directionMap := map[string]string{
+		"N": "S",
+		"E": "W",
+		"S": "N",
+		"W": "E",
 	}
-
-	// Check if east pipe is connected
-
-	// Check if south pipe is connected
-
-	// Check if west pipe is connected
-	return []string{}
-}
-
-func checkPipesConnected(pipeA pipe, pipeB pipe) bool {
-
-	return true
-}
-
-func main() {
-	lines := utils.GetFileContentByLine()
 
 	x, y := getInitialCoords(lines)
-	fmt.Printf("Start located at coords: (%d, %d)\n", x, y)
+	startingPipe := pipe{"S", x, y}
 
-	startingPipeVal := string(lines[y][x])
-	startingPipe := pipe{startingPipeVal, x, y}
-	fmt.Printf("Starting pipe val: %s\n", startingPipe.val)
+	startingPipeVal := getStartingPipeVal(lines, startingPipe, connectionMap)
 
-	currentTravelDir := getInitialDirection(lines, startingPipe)
-	fmt.Printf("Current travel dir: %s\n", currentTravelDir)
-	distanceTraveled := 0
+	travelDirection := connectionMap[startingPipeVal][0]
 
-	currentPipe := getNewPipe(lines, startingPipe, currentTravelDir)
+	currentPipe := startingPipe
 
-	for currentPipe.val != startingPipe.val {
-		fmt.Printf("Current pipe val: %s\n", currentPipe.val)
+	stepsTaken := 0
 
-		currentTravelDir = getDirToTravel(currentPipe.val, currentTravelDir)
-		currentPipe = getNewPipe(lines, currentPipe, currentTravelDir)
-		distanceTraveled++
-
-		fmt.Printf("Next pipe val: %s\n", currentPipe.val)
+	for {
+		stepsTaken++
+		switch travelDirection {
+		case "N":
+			currentPipe.yPos--
+		case "E":
+			currentPipe.xPos++
+		case "S":
+			currentPipe.yPos++
+		case "W":
+			currentPipe.xPos--
+		}
+		connectedPipe := string(lines[currentPipe.yPos][currentPipe.xPos])
+		for _, dir := range connectionMap[connectedPipe] {
+			if directionMap[dir] != travelDirection {
+				travelDirection = dir
+				break
+			}
+		}
+		currentPipe.val = connectedPipe
+		if currentPipe.val == startingPipe.val {
+			break
+		}
 	}
+	fmt.Println(stepsTaken / 2)
 
-	// Get connected pipes to start pipe
 }
