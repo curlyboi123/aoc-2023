@@ -97,7 +97,10 @@ func main() {
 
 	stepsTaken := 0
 
+	pipesInNetwork := []pipe{}
+
 	for {
+		pipesInNetwork = append(pipesInNetwork, currentPipe)
 		stepsTaken++
 		switch travelDirection {
 		case "N":
@@ -122,5 +125,6 @@ func main() {
 		}
 	}
 	fmt.Println(stepsTaken / 2)
+	fmt.Println(pipesInNetwork)
 
 }
