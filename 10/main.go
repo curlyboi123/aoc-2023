@@ -8,12 +8,6 @@ import (
 	"strings"
 )
 
-type pipe struct {
-	val  string
-	xPos int
-	yPos int
-}
-
 func getInitialCoords(lines []string) [2]int {
 	for y, line := range lines {
 		x := strings.Index(line, "S")
@@ -38,6 +32,11 @@ func shoestringAlg(vertices [][2]int) float64 {
 
 	total := math.Abs(float64(xySum-yxSum)) / 2
 	return total
+}
+
+func getNumInteriorPoints(area float64, boundaryPoints int) int {
+	interiorPoints := area + 1 - math.Floor(float64(boundaryPoints/2))
+	return int(interiorPoints)
 }
 
 // Returns the values of the pipes that are connected to the given pipe
@@ -100,6 +99,13 @@ func getEntryDirection(pipeACoords [2]int, pipeBCoords [2]int, directionMap map[
 	panic("Pipes supplied are not connected")
 }
 
+// func getStartPipeVal(startCoords [2]int, adjacentCoords [][2]int) string {
+// 	var dirs []string
+// 	_, c := range adadjacentCoords {
+// 		startstartCoords
+// 	}
+// }
+
 func main() {
 	pipeGrid := utils.GetFileContentByLine()
 	slices.Reverse(pipeGrid)
@@ -136,6 +142,10 @@ func main() {
 		newPipeCoords := getNextConnectedPipe(pipeGrid, connectionMap, directionMap, curPipeCoords, curDir)
 		newDir := getEntryDirection(curPipeCoords, newPipeCoords, directionMap)
 
+		if newPipeCoords == startingPipeCoords {
+			break
+		}
+
 		pipesInNetwork = append(pipesInNetwork, newPipeCoords)
 
 		curPipeCoords = newPipeCoords
@@ -145,14 +155,15 @@ func main() {
 	fmt.Println(len(pipesInNetwork) / 2)
 
 	var vertices [][2]int
-	vertexTypes := []string{"L", "J", "7", "F"}
+	vertexTypes := []string{"L", "J", "7", "F", "S"}
 	for _, pipe := range pipesInNetwork {
 		pipeVal := string(pipeGrid[pipe[1]][pipe[0]])
 		if slices.Contains(vertexTypes, pipeVal) {
 			vertices = append(vertices, pipe)
 		}
 	}
-	fmt.Println(vertices)
-	foo := shoestringAlg(vertices)
-	fmt.Println(foo)
+	area := shoestringAlg(vertices)
+
+	numInteriorPoints := getNumInteriorPoints(area, len(pipesInNetwork))
+	fmt.Println(numInteriorPoints)
 }
