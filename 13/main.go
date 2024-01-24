@@ -28,7 +28,7 @@ func transpose[T any](slice [][]T) [][]T {
 	return result
 }
 
-func getLineOfSymIndex(lines [][]string) [][2]int {
+func getPerfectLinesOfSymmetry(lines [][]string) [][2]int {
 	// Get duplicate lines
 	duplicateLines := map[string][]int{}
 	visitedLines := []int{}
@@ -42,6 +42,7 @@ func getLineOfSymIndex(lines [][]string) [][2]int {
 			if slices.Contains(visitedLines, j) {
 				continue
 			}
+
 			if slices.Equal(lines[i], lines[j]) {
 				duplicateLines[strings.Join(lines[i], "")] = append(duplicateLines[strings.Join(lines[i], "")], i, j)
 			}
@@ -70,6 +71,7 @@ func getLineOfSymIndex(lines [][]string) [][2]int {
 			}
 			prevLine := lines[curSymPair[0]-1]
 			nextLine := lines[curSymPair[1]+1]
+			// Part 2 needs to allow 1 element in slice to be different and still be considered equal
 			if !slices.Equal(prevLine, nextLine) {
 				break
 			}
@@ -84,7 +86,7 @@ func main() {
 
 	total := 0
 	for idx, mirror := range mirrors {
-		fmt.Println("Mirror: ", idx)
+		fmt.Println("Mirror: ", idx+1)
 		lines := strings.Split(mirror, "\n")
 
 		linesAsRows := [][]string{}
@@ -94,12 +96,15 @@ func main() {
 		}
 		linesAsCols := transpose[string](linesAsRows)
 
-		rowLinesOfSym := getLineOfSymIndex(linesAsRows)
-		colLinesOfSym := getLineOfSymIndex(linesAsCols)
+		rowLinesOfSym := getPerfectLinesOfSymmetry(linesAsRows)
+		colLinesOfSym := getPerfectLinesOfSymmetry(linesAsCols)
 
-		fmt.Println("Horizontal line of symmetry: ", rowLinesOfSym)
-
-		fmt.Println("Column line of symmetry: ", colLinesOfSym)
+		if len(rowLinesOfSym) > 0 {
+			fmt.Println("Horizontal line of symmetry between lines: ", rowLinesOfSym)
+		}
+		if len(colLinesOfSym) > 0 {
+			fmt.Println("Column line of symmetry between lines: ", colLinesOfSym)
+		}
 
 		for _, rowLines := range rowLinesOfSym {
 			total += (rowLines[0] + 1) * 100
@@ -107,7 +112,6 @@ func main() {
 		for _, colLines := range colLinesOfSym {
 			total += colLines[0] + 1
 		}
-		fmt.Println()
 	}
 	fmt.Println(total)
 }
