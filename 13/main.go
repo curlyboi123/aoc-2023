@@ -13,64 +13,101 @@ func splitMirrors() []string {
 	return strings.Split(string(content), "\n\n")
 }
 
+func transpose[T any](slice [][]T) [][]T {
+	xl := len(slice[0])
+	yl := len(slice)
+	result := make([][]T, xl)
+	for i := range result {
+		result[i] = make([]T, yl)
+	}
+	for i := 0; i < xl; i++ {
+		for j := 0; j < yl; j++ {
+			result[i][j] = slice[j][i]
+		}
+	}
+	return result
+}
+
+func getLineOfSymIndex(lines [][]string) [][2]int {
+	// Get duplicate lines
+	duplicateLines := map[string][]int{}
+	visitedLines := []int{}
+	for i := 0; i < len(lines); i++ {
+		// Skip check if already in map
+		if slices.Contains(visitedLines, i) {
+			continue
+		}
+		for j := i + 1; j < len(lines); j++ {
+			// Skip check if already in map
+			if slices.Contains(visitedLines, j) {
+				continue
+			}
+			if slices.Equal(lines[i], lines[j]) {
+				duplicateLines[strings.Join(lines[i], "")] = append(duplicateLines[strings.Join(lines[i], "")], i, j)
+			}
+		}
+	}
+
+	// Find lines where there is line of symmetry
+	linesOfSymmetry := [][2]int{}
+	for _, v := range duplicateLines {
+		for i := 0; i < len(v)-1; i++ {
+			if v[i] == v[i+1]-1 {
+				linesOfSymmetry = append(linesOfSymmetry, [2]int{v[i], v[i+1]})
+
+			}
+		}
+	}
+
+	// For each line of symmetry see how many lines it extends to
+	linesOfPerfectSym := [][2]int{}
+	for _, los := range linesOfSymmetry {
+		curSymPair := los
+		for {
+			if curSymPair[0] == 0 || curSymPair[1] >= len(lines)-1 {
+				linesOfPerfectSym = append(linesOfPerfectSym, los)
+				break
+			}
+			prevLine := lines[curSymPair[0]-1]
+			nextLine := lines[curSymPair[1]+1]
+			if !slices.Equal(prevLine, nextLine) {
+				break
+			}
+			curSymPair = [2]int{curSymPair[0] - 1, curSymPair[1] + 1}
+		}
+	}
+	return linesOfPerfectSym
+}
+
 func main() {
 	mirrors := splitMirrors()
 
+	total := 0
 	for idx, mirror := range mirrors {
-
 		fmt.Println("Mirror: ", idx)
-		horizontalLines := strings.Split(mirror, "\n")
+		lines := strings.Split(mirror, "\n")
 
-		// Get duplicate lines
-		duplicateLines := map[string][]int{}
-		visitedLines := []int{}
-		for i := 0; i < len(horizontalLines); i++ {
-			// Skip check if already in map
-			if slices.Contains(visitedLines, i) {
-				continue
-			}
-			for j := i + 1; j < len(horizontalLines); j++ {
-				// Skip check if already in map
-				if slices.Contains(visitedLines, j) {
-					continue
-				}
-				if horizontalLines[i] == horizontalLines[j] {
-					duplicateLines[horizontalLines[i]] = append(duplicateLines[horizontalLines[i]], i, j)
-				}
-			}
+		linesAsRows := [][]string{}
+		for _, line := range lines {
+			bar := strings.Split(line, "")
+			linesAsRows = append(linesAsRows, bar)
 		}
+		linesAsCols := transpose[string](linesAsRows)
 
-		// Find lines where there is line of symmetry
-		linesOfSymmetry := [][2]int{}
-		for _, v := range duplicateLines {
-			for i := 0; i < len(v)-1; i++ {
-				if v[i] == v[i+1]-1 {
-					linesOfSymmetry = append(linesOfSymmetry, [2]int{v[i], v[i+1]})
+		rowLinesOfSym := getLineOfSymIndex(linesAsRows)
+		colLinesOfSym := getLineOfSymIndex(linesAsCols)
 
-				}
-			}
+		fmt.Println("Horizontal line of symmetry: ", rowLinesOfSym)
+
+		fmt.Println("Column line of symmetry: ", colLinesOfSym)
+
+		for _, rowLines := range rowLinesOfSym {
+			total += (rowLines[0] + 1) * 100
 		}
-		fmt.Println("Lines of symmetry: ", linesOfSymmetry)
-
-		// For each line of symmetry see how many lines it extends to
-		for _, los := range linesOfSymmetry {
-			curSymPair := los
-			numLinesInLineOfSym := map[[2]int]int{los: 1}
-			for {
-				if curSymPair[0] == 0 || curSymPair[1] >= len(horizontalLines)-1 {
-					break
-				}
-				prevLine := horizontalLines[curSymPair[0]-1]
-				nextLine := horizontalLines[curSymPair[1]+1]
-				if prevLine != nextLine {
-					break
-				}
-				curSymPair = [2]int{curSymPair[0] - 1, curSymPair[1] + 1}
-				numLinesInLineOfSym[los]++
-			}
-			fmt.Println(numLinesInLineOfSym)
+		for _, colLines := range colLinesOfSym {
+			total += colLines[0] + 1
 		}
-
-		// Get largest amount of lines in line of symmetry as that is the perfect one
+		fmt.Println()
 	}
+	fmt.Println(total)
 }
