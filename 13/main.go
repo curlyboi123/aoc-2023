@@ -46,27 +46,23 @@ func getLineOfSymmetryIndexPartOne(lines [][]string) int {
 
 func getLineOfSymmetryIndexPartTwo(lines [][]string) int {
 	for i := 0; i < len(lines)-1; i++ {
-		// Track how many tiles changed
-		// We are looking for solution that changed 1 tile
-		tilesChanged := 0
+		tileHasChanged := false
 		symmetryPossible := true
 		for a, b := i, i+1; a >= 0 && b < len(lines); a, b = a-1, b+1 {
-			if slices.CompareFunc(lines[a], lines[b], func(e1, e2 string) int {
+			if !slices.EqualFunc(lines[a], lines[b], func(e1, e2 string) bool {
 				if e1 != e2 {
-					if tilesChanged == 0 {
-						tilesChanged++
-						return 0
-					} else {
-						return -1
+					if tileHasChanged {
+						return false
 					}
+					tileHasChanged = true
 				}
-				return 0
-			}) != 0 {
+				return true
+			}) {
 				symmetryPossible = false
 				break
 			}
 		}
-		if symmetryPossible && tilesChanged == 1 {
+		if symmetryPossible && tileHasChanged {
 			return i + 1
 		}
 	}
