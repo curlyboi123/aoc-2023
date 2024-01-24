@@ -28,65 +28,55 @@ func transpose[T any](slice [][]T) [][]T {
 	return result
 }
 
-func getPerfectLinesOfSymmetry(lines [][]string) [][2]int {
-	// Get duplicate lines
-	duplicateLines := map[string][]int{}
-	visitedLines := []int{}
-	for i := 0; i < len(lines); i++ {
-		// Skip check if already in map
-		if slices.Contains(visitedLines, i) {
-			continue
-		}
-		for j := i + 1; j < len(lines); j++ {
-			// Skip check if already in map
-			if slices.Contains(visitedLines, j) {
-				continue
-			}
-
-			if slices.Equal(lines[i], lines[j]) {
-				duplicateLines[strings.Join(lines[i], "")] = append(duplicateLines[strings.Join(lines[i], "")], i, j)
-			}
-		}
-	}
-
-	// Find lines where there is line of symmetry
-	linesOfSymmetry := [][2]int{}
-	for _, v := range duplicateLines {
-		for i := 0; i < len(v)-1; i++ {
-			if v[i] == v[i+1]-1 {
-				linesOfSymmetry = append(linesOfSymmetry, [2]int{v[i], v[i+1]})
-
-			}
-		}
-	}
-
-	// For each line of symmetry see how many lines it extends to
-	linesOfPerfectSym := [][2]int{}
-	for _, los := range linesOfSymmetry {
-		curSymPair := los
-		for {
-			if curSymPair[0] == 0 || curSymPair[1] >= len(lines)-1 {
-				linesOfPerfectSym = append(linesOfPerfectSym, los)
+func getLineOfSymmetryIndexPartOne(lines [][]string) int {
+	for i := 0; i < len(lines)-1; i++ {
+		symmetryPossible := true
+		for a, b := i, i+1; a >= 0 && b < len(lines); a, b = a-1, b+1 {
+			if !slices.Equal(lines[a], lines[b]) {
+				symmetryPossible = false
 				break
 			}
-			prevLine := lines[curSymPair[0]-1]
-			nextLine := lines[curSymPair[1]+1]
-			// Part 2 needs to allow 1 element in slice to be different and still be considered equal
-			if !slices.Equal(prevLine, nextLine) {
-				break
-			}
-			curSymPair = [2]int{curSymPair[0] - 1, curSymPair[1] + 1}
+		}
+		if symmetryPossible {
+			return i + 1
 		}
 	}
-	return linesOfPerfectSym
+	return 0
 }
 
-func main() {
-	mirrors := splitMirrors()
+func getLineOfSymmetryIndexPartTwo(lines [][]string) int {
+	for i := 0; i < len(lines)-1; i++ {
+		// Track how many tiles changed
+		// We are looking for solution that changed 1 tile
+		tilesChanged := 0
+		symmetryPossible := true
+		for a, b := i, i+1; a >= 0 && b < len(lines); a, b = a-1, b+1 {
+			if slices.CompareFunc(lines[a], lines[b], func(e1, e2 string) int {
+				if e1 != e2 {
+					if tilesChanged == 0 {
+						tilesChanged++
+						return 0
+					} else {
+						return -1
+					}
+				}
+				return 0
+			}) != 0 {
+				symmetryPossible = false
+				break
+			}
+		}
+		if symmetryPossible && tilesChanged == 1 {
+			return i + 1
+		}
+	}
+	return 0
+}
 
+func partOne() {
+	mirrors := splitMirrors()
 	total := 0
-	for idx, mirror := range mirrors {
-		fmt.Println("Mirror: ", idx+1)
+	for _, mirror := range mirrors {
 		lines := strings.Split(mirror, "\n")
 
 		linesAsRows := [][]string{}
@@ -96,22 +86,40 @@ func main() {
 		}
 		linesAsCols := transpose[string](linesAsRows)
 
-		rowLinesOfSym := getPerfectLinesOfSymmetry(linesAsRows)
-		colLinesOfSym := getPerfectLinesOfSymmetry(linesAsCols)
+		rowNumLineOfSym := getLineOfSymmetryIndexPartOne(linesAsRows)
+		colNumLineOfSym := getLineOfSymmetryIndexPartOne(linesAsCols)
 
-		if len(rowLinesOfSym) > 0 {
-			fmt.Println("Horizontal line of symmetry between lines: ", rowLinesOfSym)
-		}
-		if len(colLinesOfSym) > 0 {
-			fmt.Println("Column line of symmetry between lines: ", colLinesOfSym)
-		}
+		total += rowNumLineOfSym * 100
+		total += colNumLineOfSym
 
-		for _, rowLines := range rowLinesOfSym {
-			total += (rowLines[0] + 1) * 100
-		}
-		for _, colLines := range colLinesOfSym {
-			total += colLines[0] + 1
-		}
 	}
 	fmt.Println(total)
+}
+
+func partTwo() {
+	mirrors := splitMirrors()
+	total := 0
+	for _, mirror := range mirrors {
+		lines := strings.Split(mirror, "\n")
+
+		linesAsRows := [][]string{}
+		for _, line := range lines {
+			bar := strings.Split(line, "")
+			linesAsRows = append(linesAsRows, bar)
+		}
+		linesAsCols := transpose[string](linesAsRows)
+
+		rowNumLineOfSym := getLineOfSymmetryIndexPartTwo(linesAsRows)
+		colNumLineOfSym := getLineOfSymmetryIndexPartTwo(linesAsCols)
+
+		total += rowNumLineOfSym * 100
+		total += colNumLineOfSym
+
+	}
+	fmt.Println(total)
+}
+
+func main() {
+	partOne()
+	partTwo()
 }
