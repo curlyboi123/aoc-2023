@@ -1,6 +1,7 @@
 package main
 
 import (
+	"aoc-2023/utils"
 	"fmt"
 	"os"
 	"slices"
@@ -80,7 +81,7 @@ func partOne() {
 			bar := strings.Split(line, "")
 			linesAsRows = append(linesAsRows, bar)
 		}
-		linesAsCols := transpose[string](linesAsRows)
+		linesAsCols := utils.Transpose[string](linesAsRows)
 
 		rowNumLineOfSym := getLineOfSymmetryIndexPartOne(linesAsRows)
 		colNumLineOfSym := getLineOfSymmetryIndexPartOne(linesAsCols)
@@ -103,7 +104,7 @@ func partTwo() {
 			bar := strings.Split(line, "")
 			linesAsRows = append(linesAsRows, bar)
 		}
-		linesAsCols := transpose[string](linesAsRows)
+		linesAsCols := utils.Transpose[string](linesAsRows)
 
 		rowNumLineOfSym := getLineOfSymmetryIndexPartTwo(linesAsRows)
 		colNumLineOfSym := getLineOfSymmetryIndexPartTwo(linesAsCols)
