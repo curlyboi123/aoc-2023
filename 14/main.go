@@ -122,7 +122,7 @@ func partTwo() {
 
 	// Get a map of the cycle totals and the cycle runs they correspond to
 	cycleTotals := map[int][]int{}
-	numOfCycles := 1000 // Arbitrary number of cycles to run to get all possible cycle totals that recur throughout
+	numOfCycles := 1000 // Arbitrary num of cycles to run to get all possible recurring totals
 	for i := 0; i < numOfCycles; i++ {
 		lines = runCycle(lines)
 		cycleTotal := sumRocks(lines)
@@ -149,6 +149,7 @@ func partTwo() {
 		}
 	}
 
+	// See for each rock sum sequence if target would be in it
 	targetCycles := 1000000000
 	var valueAtCycleEnd int
 	for k, v := range cycleTotals {
