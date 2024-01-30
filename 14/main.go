@@ -49,24 +49,8 @@ func simulateTilt(lines [][]string, movableSections [][][]int, direction string)
 }
 
 // Lines should be in column format when passed in
-func runCycle(lines [][]string) [][]string {
-	re := regexp.MustCompile(`[\.O]+`)
-
-	colSections := [][][]int{}
-	for _, line := range lines {
-		foo := strings.Join(line, "")
-		colSections = append(colSections, re.FindAllStringIndex(foo, -1))
-	}
-
-	lines = utils.Transpose[string](lines) // Cols -> Rows
-	rowSections := [][][]int{}
-	for _, line := range lines {
-		foo := strings.Join(line, "")
-		rowSections = append(rowSections, re.FindAllStringIndex(foo, -1))
-	}
-
+func runCycle(lines [][]string, rowSections [][][]int, colSections [][][]int) [][]string {
 	// North tilt
-	lines = utils.Transpose[string](lines) // Rows -> Cols
 	lines = simulateTilt(lines, colSections, "north")
 	lines = utils.Transpose[string](lines) // Cols -> Rows
 
@@ -118,13 +102,30 @@ func partTwo() {
 		bar := strings.Split(line, "")
 		lines = append(lines, bar)
 	}
+
+	// Work out movable sections for line as rows and cols as only needs to be done once
+	re := regexp.MustCompile(`[\.O]+`)
+	// Work out movable sections for lines as rows
+	rowSections := [][][]int{}
+	for _, line := range lines {
+		foo := strings.Join(line, "")
+		rowSections = append(rowSections, re.FindAllStringIndex(foo, -1))
+	}
+
 	lines = utils.Transpose[string](lines) // Rows -> Cols
+
+	// Work out movable sections for lines as cols
+	colSections := [][][]int{}
+	for _, line := range lines {
+		foo := strings.Join(line, "")
+		colSections = append(colSections, re.FindAllStringIndex(foo, -1))
+	}
 
 	// Get a map of the cycle totals and the cycle runs they correspond to
 	cycleTotals := map[int][]int{}
 	numOfCycles := 1000 // Arbitrary num of cycles to run to get all possible recurring totals
 	for i := 0; i < numOfCycles; i++ {
-		lines = runCycle(lines)
+		lines = runCycle(lines, rowSections, colSections)
 		cycleTotal := sumRocks(lines)
 		cycleTotals[cycleTotal] = append(cycleTotals[cycleTotal], i+1)
 	}
