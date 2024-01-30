@@ -48,7 +48,7 @@ func simulateTilt(lines [][]string, movableSections [][][]int, direction string)
 	return lines
 }
 
-// Lines should be in column format when passed in
+// Lines should be in column format when passed in and will return in col format
 func runCycle(lines [][]string, rowSections [][][]int, colSections [][][]int) [][]string {
 	// North tilt
 	lines = simulateTilt(lines, colSections, "north")
