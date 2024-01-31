@@ -160,6 +160,10 @@ func partTwo() {
 		}
 	}
 	fmt.Println(valueAtCycleEnd)
+
+	// TODO Improvements
+	// Work out common difference between recurring totals
+	//
 }
 
 func main() {
