@@ -44,7 +44,7 @@ func partTwo() {
 			label := details[0]
 			focalLength, _ := strconv.Atoi(details[1])
 			box := hashAlgorithm(label)
-			// Replace lens with label already in box
+
 			lensToAdd := lensDetails{label, focalLength}
 			existingLensIdx := slices.IndexFunc(boxes[box], func(lens lensDetails) bool {
 				return lens.label == label
@@ -53,6 +53,7 @@ func partTwo() {
 			if existingLensIdx == -1 {
 				boxes[box] = append(boxes[box], lensToAdd)
 			} else {
+				// Replace lens with label already in box
 				boxes[box][existingLensIdx] = lensToAdd
 			}
 		} else if strings.Contains(step, "-") {
@@ -64,10 +65,16 @@ func partTwo() {
 				return lens.label == label
 			})
 		}
-		fmt.Println("After Step ", step)
-		fmt.Println(boxes)
-		fmt.Println()
 	}
+
+	// Sum up focusing power of all lenses
+	sum := 0
+	for boxNum, lenses := range boxes {
+		for idx, lens := range lenses {
+			sum += (boxNum + 1) * (idx + 1) * lens.focalLength
+		}
+	}
+	fmt.Println(sum)
 }
 
 func main() {
