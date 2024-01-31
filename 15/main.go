@@ -46,20 +46,15 @@ func partTwo() {
 			box := hashAlgorithm(label)
 			// Replace lens with label already in box
 			lensToAdd := lensDetails{label, focalLength}
-			if lensInBox, ok := boxes[box]; ok {
-				existingLensIdx := slices.IndexFunc(boxes[box], func(lens lensDetails) bool {
-					return lens.label == label
-				})
-				// Lens does not exist in box
-				if existingLensIdx == -1 {
-					boxes[box] = append(lensInBox, lensToAdd)
-				} else {
-					boxes[box][existingLensIdx] = lensToAdd
-				}
+			existingLensIdx := slices.IndexFunc(boxes[box], func(lens lensDetails) bool {
+				return lens.label == label
+			})
+			// Lens does not exist in box
+			if existingLensIdx == -1 {
+				boxes[box] = append(boxes[box], lensToAdd)
 			} else {
-				boxes[box] = []lensDetails{lensToAdd}
+				boxes[box][existingLensIdx] = lensToAdd
 			}
-
 		} else if strings.Contains(step, "-") {
 			details := strings.Split(step, "-")
 			label := details[0]
