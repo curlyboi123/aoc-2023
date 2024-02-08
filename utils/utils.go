@@ -25,3 +25,11 @@ func Transpose[T any](slice [][]T) [][]T {
 	}
 	return result
 }
+
+func Get2dGridFromLines(lines []string) [][]string {
+	grid := [][]string{}
+	for _, line := range lines {
+		grid = append(grid, strings.Split(line, ""))
+	}
+	return grid
+}
