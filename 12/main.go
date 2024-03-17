@@ -1,10 +1,11 @@
 package main
 
 import (
-	"aoc-2023/utils"
 	"fmt"
 	"regexp"
 	"strings"
+
+	"example.com/utils"
 )
 
 func main() {

@@ -1,11 +1,12 @@
 package main
 
 import (
-	"aoc-2023/utils"
 	"fmt"
 	"math"
 	"regexp"
 	"slices"
+
+	"example.com/utils"
 )
 
 func getTotalGalaxyDist(expansionMultiplier int) int {

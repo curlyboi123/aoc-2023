@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"aoc-2023/utils"
+	"example.com/utils"
 )
 
 func checkContainsNonZero(s []int) bool {

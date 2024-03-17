@@ -1,3 +1,3 @@
-module aoc-2023/utils
+module example.com/utils
 
-go 1.21.4
+go 1.22.1

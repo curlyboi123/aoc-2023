@@ -1,11 +1,12 @@
 package main
 
 import (
-	"aoc-2023/utils"
 	"fmt"
 	"math"
 	"slices"
 	"strings"
+
+	"example.com/utils"
 )
 
 func getInitialCoords(lines []string) [2]int {
