@@ -1,18 +1,13 @@
 package main
 
 import (
-	"aoc-2023/utils"
 	"fmt"
 	"regexp"
 	"slices"
 	"strings"
-)
 
-func printRows(lines [][]string) {
-	for idx, i := range lines {
-		fmt.Println(idx, i)
-	}
-}
+	"example.com/utils"
+)
 
 func sumRocks(lines [][]string) int {
 	total := 0

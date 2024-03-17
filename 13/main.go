@@ -1,11 +1,12 @@
 package main
 
 import (
-	"aoc-2023/utils"
 	"fmt"
 	"os"
 	"slices"
 	"strings"
+
+	"example.com/utils"
 )
 
 func splitMirrors() []string {

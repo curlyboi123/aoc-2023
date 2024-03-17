@@ -1,11 +1,12 @@
 package main
 
 import (
-	"aoc-2023/utils"
 	"fmt"
 	"slices"
 	"strconv"
 	"strings"
+
+	"example.com/utils"
 )
 
 func hashAlgorithm(step string) int {

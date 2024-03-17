@@ -1,10 +1,11 @@
 package main
 
 import (
-	"aoc-2023/utils"
 	"fmt"
 	"slices"
 	"sync"
+
+	"example.com/utils"
 )
 
 func getIndexOfNextMirror(line []string) int {
